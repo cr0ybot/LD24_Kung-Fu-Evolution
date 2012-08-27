@@ -2,7 +2,7 @@ package com.cr0ybot.ld24.worlds;
 
 import com.cr0ybot.ld24.entities.PlayerEntity;
 import com.cr0ybot.ld24.utils.GameState;
-import com.cr0ybot.ld24.utils.Style;
+import com.cr0ybot.ld24.utils.Styles;
 import com.haxepunk.World;
 
 /**
@@ -22,7 +22,7 @@ class GameWorld extends World
 	
 	public override function begin()
 	{
-		player = new PlayerEntity(50, 50, Style.DRAGON, Style.MONKEY, Style.MONKEY, Style.MONKEY, Style.DRAGON);
+		player = new PlayerEntity(50, 50);
 		add(player);
 	}
 	
@@ -30,23 +30,23 @@ class GameWorld extends World
 	{
 		switch (GameState.state)
 		{
-			case GameState.INTRO:
+			case Intro:
 				
 			// end INTRO
 			
-			case GameState.CHOOSE:
+			case Choose:
 				
 			// end CHOOSE
 			
-			case GameState.FIGHT:
+			case Fight:
 				
 			// end FIGHT
 			
-			case GameState.RESULT:
+			case Result:
 				
 			// end RESULT
 			
-			case GameState.TREE:
+			case Tree:
 				
 			// end TREE
 		}

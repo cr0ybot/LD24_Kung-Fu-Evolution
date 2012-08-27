@@ -1,7 +1,7 @@
 package com.cr0ybot.ld24.entities;
 
-import com.cr0ybot.ld24.utils.Style;
-import com.cr0ybot.ld24.utils.Moves;
+import com.cr0ybot.ld24.utils.Styles;
+//import com.cr0ybot.ld24.utils.Moves;
 import com.haxepunk.Entity;
 import com.haxepunk.graphics.Spritemap;
 
@@ -15,8 +15,10 @@ enum AnimState {
 	Walk;
 	Punch;
 	Kick;
-	Jump;
-	Block;
+	JumpStart;
+	JumpEnd;
+	BlockStart;
+	BlockEnd;
 }
 
 class FighterEntity extends Entity
@@ -25,23 +27,24 @@ class FighterEntity extends Entity
 	private static inline var FRAME_HEIGHT:Int = 24;
 	private static inline var SCALE:Int = 2;
 	
-	public static inline var RIGHT	:String = "right";
-	public static inline var LEFT	:String = "left";
-	public static inline var IDLE	:String = "idle";
-	public static inline var WALK	:String = "walk";
+	public static inline var RIGHT	:String = "Right";
+	public static inline var LEFT	:String = "Left";
+	public static inline var IDLE	:String = "Idle";
+	public static inline var WALK	:String = "Walk";
 	
-	public var focusStyle:String;
-	public var punchStyle:String;
-	public var kickStyle:String;
-	public var jumpStyle:String;
-	public var blockStyle:String;
+	public var focusStyle:Style;
+	public var punchStyle:Style;
+	public var kickStyle:Style;
+	public var jumpStyle:Style;
+	public var blockStyle:Style;
 	
 	private var animPlaying:Bool = false;
 	private var actionState:Bool = false;
 	
 	private var animState:AnimState;
-	public function getAnimState():String
+	public function getAnimState():AnimState
 	{
+		/*
 		switch(animState)
 		{
 			case Idle: return IDLE;
@@ -52,32 +55,49 @@ class FighterEntity extends Entity
 			case Block: return Moves.BLOCK;
 			default: return IDLE;
 		}
+		*/
+		
+		return animState;
 	}
-	public function setAnimState(state:String):Void
+	public function setAnimState(?state:AnimState):Void
 	{
+		if (state == null) state = AnimState.Idle;
+		
 		switch(state)
 		{
-			case IDLE:
+			case Idle:
 				actionState = false;
 				animState = Idle;
-			case WALK:
+			case Walk:
 				actionState = false;
 				animState = Walk;
-			case Moves.PUNCH:
+			case Punch:
 				actionState = true;
 				animState = Punch;
-			case Moves.KICK:
+			case Kick:
 				actionState = true;
 				animState = Kick;
-			case Moves.JUMP:
+			case JumpStart:
+				actionState = false;
+				animState = JumpStart;
+			case JumpEnd:
 				actionState = true;
-				animState = Jump;
-			case Moves.BLOCK:
+				animState = JumpEnd;
+			case BlockStart:
+				actionState = false;
+				animState = BlockStart;
+			case BlockEnd:
 				actionState = true;
-				animState = Block;
+				animState = BlockEnd;
 			default:
 				actionState = false; animState = Idle;
 		}
+	}
+	public function getAnimStateString(?state:AnimState):String
+	{
+		if (state == null) state = animState;
+		
+		return Std.string(state);
 	}
 	
 	/*
@@ -89,8 +109,14 @@ class FighterEntity extends Entity
 	
 	public var sprite:Spritemap;
 	
-	public function new(x:Float, y:Float, focus:String, punch:String, kick:String, jump:String, block:String) 
+	public function new(x:Float, y:Float, ?focus:Style, ?punch:Style, ?kick:Style, ?jump:Style, ?block:Style) 
 	{
+		if (focus == null) focus = Styles.getRandomStyle();
+		if (punch == null) punch = Styles.getRandomStyle();
+		if (kick == null) kick = Styles.getRandomStyle();
+		if (jump == null) jump = Styles.getRandomStyle();
+		if (block == null) block = Styles.getRandomStyle();
+		
 		focusStyle = focus;
 		punchStyle = punch;
 		kickStyle = kick;
@@ -99,22 +125,17 @@ class FighterEntity extends Entity
 		
 		animState = Idle;
 		
-		/*
-		punchMove = Style.getMoveName(punchStyle, PUNCH);
-		kickMove = Style.getMoveName(kickStyle, KICK);
-		jumpMove = Style.getMoveName(jumpStyle, JUMP);
-		blockMove = Style.getMoveName(blockStyle, BLOCK);
-		*/
-		
-		sprite = new Spritemap(Style.getSpriteSource(focusStyle), FRAME_WIDTH, FRAME_HEIGHT, animEnd);
+		sprite = new Spritemap(Styles.getSpriteSource(focusStyle), FRAME_WIDTH, FRAME_HEIGHT, animEnd);
 		sprite.scale = SCALE;
 		
-		sprite.add(IDLE, [0, 1], 3, true);
-		sprite.add(WALK, [1, 2, 3, 4, 5, 6, 7, 8], 18, true);
-		sprite.add(Moves.PUNCH, Moves.getFrames(punchStyle, Moves.PUNCH), 18, false);
-		sprite.add(Moves.KICK, Moves.getFrames(kickStyle, Moves.KICK), 13, false);
-		sprite.add(Moves.JUMP, Moves.getFrames(jumpStyle, Moves.JUMP), 15, false);
-		sprite.add(Moves.BLOCK, Moves.getFrames(blockStyle, Moves.BLOCK), 14, false);
+		sprite.add(getAnimStateString(Idle), [0, 1], 3, true);
+		sprite.add(getAnimStateString(Walk), [1, 2, 3, 4, 5, 6, 7, 8], 18, true);
+		sprite.add(getAnimStateString(Punch), Moves.getFrames(punchStyle, Move.Punch), 18, false);
+		sprite.add(getAnimStateString(Kick), Moves.getFrames(kickStyle, Move.Kick), 13, false);       
+		sprite.add(getAnimStateString(JumpStart), Moves.getFrames(jumpStyle, Move.Jump(true)), 15, false);
+		sprite.add(getAnimStateString(JumpEnd), Moves.getFrames(jumpStyle, Move.Jump(false)), 15, false);
+		sprite.add(getAnimStateString(BlockStart), Moves.getFrames(blockStyle, Move.Block(true)), 20, false);
+		sprite.add(getAnimStateString(BlockEnd), Moves.getFrames(blockStyle, Move.Block(false)), 20, false);
 		
 		graphic = sprite;
 		
@@ -135,16 +156,19 @@ class FighterEntity extends Entity
 	
 	private function animHandler()
 	{
-		sprite.play(getAnimState(), !animPlaying);
+		sprite.play(getAnimStateString(), !animPlaying);
 		animPlaying = true;
 	}
 	
 	private function animEnd()
 	{
 		// if finished performing action, set to IDLE so next move can be performed
-		if (actionState) setAnimState(IDLE);
-		else if (getAnimState() == WALK) setAnimState(IDLE);
-		animPlaying = false;
+		if (actionState)
+		{
+			animPlaying = false;
+			setAnimState(Idle);
+		}
+		else if (animState == Walk) setAnimState(Idle);
 		trace("actionState: " + actionState);
 	}
 }

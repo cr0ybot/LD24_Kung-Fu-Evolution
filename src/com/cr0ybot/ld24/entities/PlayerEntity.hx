@@ -3,7 +3,8 @@ package com.cr0ybot.ld24.entities;
 import com.haxepunk.graphics.Image;
 import com.haxepunk.utils.Input;
 import com.haxepunk.utils.Key;
-import com.cr0ybot.ld24.utils.Moves;
+//import com.cr0ybot.ld24.utils.Moves;
+import com.cr0ybot.ld24.utils.Styles;
 
 /**
  * ...
@@ -20,15 +21,14 @@ class PlayerEntity extends FighterEntity
 	private static inline var LEFT_KEY	:Int = Key.LEFT;
 	private static inline var RIGHT_KEY	:Int = Key.RIGHT;
 	
-	
-	public function new(x:Float, y:Float, focus:String, punch:String, kick:String, jump:String, block:String) 
+	public function new(x:Float, y:Float, ?focus:Style, ?punch:Style, ?kick:Style, ?jump:Style, ?block:Style) 
 	{
-		Input.define(FighterEntity.RIGHT, [RIGHT_KEY]);
-		Input.define(FighterEntity.LEFT, [LEFT_KEY]);
-		Input.define(Moves.PUNCH, [PUNCH_KEY]);
-		Input.define(Moves.KICK, [KICK_KEY]);
-		Input.define(Moves.JUMP, [JUMP_KEY]);
-		Input.define(Moves.BLOCK, [BLOCK_KEY]);
+		Input.define("Right", [RIGHT_KEY]);
+		Input.define("Left", [LEFT_KEY]);
+		Input.define("Punch", [PUNCH_KEY]);
+		Input.define("Kick", [KICK_KEY]);
+		Input.define("Jump", [JUMP_KEY]);
+		Input.define("Block", [BLOCK_KEY]);
 		
 		super(x, y, focus, punch, kick, jump, block);
 	}
@@ -42,66 +42,53 @@ class PlayerEntity extends FighterEntity
 	
 	public override function moveHandler()
 	{
-		var curAnim:String = getAnimState();
+		var curAnim:FighterEntity.AnimState = getAnimState();
 		
-		if (!actionState || curAnim == FighterEntity.WALK)
+		if (!actionState || curAnim == FighterEntity.AnimState.Walk)
 		{
-			if (Input.pressed(Moves.PUNCH))
+			if (Input.pressed("Punch"))
 			{
-				setAnimState(Moves.PUNCH);
+				setAnimState(FighterEntity.AnimState.Punch);
 			}
-			else if (Input.pressed(Moves.KICK))
+			else if (Input.pressed("Kick"))
 			{
-				setAnimState(Moves.KICK);
+				setAnimState(FighterEntity.AnimState.Kick);
 			}
-			else if (Input.pressed(Moves.JUMP))
+			else if (Input.check("Jump"))
 			{
-				setAnimState(Moves.JUMP);
+				setAnimState(FighterEntity.AnimState.JumpStart);
 			}
-			else if (Input.pressed(Moves.BLOCK))
+			else if (Input.released("Jump"))
 			{
-				setAnimState(Moves.BLOCK);
+				setAnimState(FighterEntity.AnimState.JumpEnd);
+			}
+			else if (Input.check("Block"))
+			{
+				setAnimState(FighterEntity.AnimState.BlockStart);
+			}
+			else if (Input.released("Block"))
+			{
+				setAnimState(FighterEntity.AnimState.BlockEnd);
 			}
 			// Check movement keys last so moves dont get overridden
-			else if (Input.check(FighterEntity.RIGHT))
+			else if (Input.check("Right"))
 			{
 				if (sprite.flipped) sprite.flipped = false;
-				setAnimState(FighterEntity.WALK);
+				setAnimState(FighterEntity.AnimState.Walk);
 			}
-			else if (Input.check(FighterEntity.LEFT))
+			else if (Input.check("Left"))
 			{
 				if (!sprite.flipped) sprite.flipped = true;
-				setAnimState(FighterEntity.WALK);
+				setAnimState(FighterEntity.AnimState.Walk);
 			}
 			else
 			{
-				setAnimState(FighterEntity.IDLE);
+				setAnimState(FighterEntity.AnimState.Idle);
 			}
 		}
 		else
 		{
 			
 		}
-		
-		/*
-		if (Input.check(Moves.PUNCH))
-		{
-			setAnimState(Moves.PUNCH);
-		}
-		else if ((curAnim != IDLE || curAnim == WALK) && Input.check(RIGHT))
-		{
-			if (sprite.flipped) sprite.flipped = false;
-			setAnimState(WALK);
-		}
-		else if ((curAnim != IDLE || curAnim == WALK) && Input.check(LEFT))
-		{
-			if (!sprite.flipped) sprite.flipped = true;
-			setAnimState(WALK);
-		}
-		else
-		{
-			setAnimState(IDLE);
-		}
-		*/
 	}
 }
